@@ -2,6 +2,7 @@ mod authen;
 mod router;
 mod models;
 mod results;
+mod pages;
 
 use actix_web::{App, cookie, HttpServer, middleware, web};
 use actix_session::{SessionMiddleware};
