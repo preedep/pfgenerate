@@ -1,14 +1,15 @@
-use actix_session::SessionMiddleware;
+use actix_session::{SessionExt, SessionMiddleware, SessionStatus};
 use actix_session::config::PersistentSession;
 use actix_session::storage::RedisActorSessionStore;
 use actix_web::{App, cookie, HttpServer, middleware, web};
 use actix_web::dev::Service as _;
-use actix_web::cookie::SameSite;
+use actix_web::cookie::{Cookie, Expiration, SameSite};
 use actix_web::cookie::time::Duration;
 use actix_web::middleware::Logger;
 use actix_web::web::Data;
 use futures_util::future::FutureExt;
 use log::{debug, info};
+use crate::authen::login::login;
 
 use crate::models::configuration::Config;
 use crate::models::entra_id::{JWKS, OpenIDConfigurationV2};
@@ -20,6 +21,8 @@ mod models;
 mod results;
 mod pages;
 
+const APP_AUTHEN_SESSION_KEY: &'static str = "APP_AUTHEN_SESSION_KEY";
+
 fn middle_ware_session(
     redis_connection: &str,
     private_key: cookie::Key,
@@ -28,7 +31,7 @@ fn middle_ware_session(
     SessionMiddleware::builder(RedisActorSessionStore::new(
         redis_connection),
                                private_key)
-        .cookie_name("APP_AUTHEN_SESSION_KEY".to_string())
+        .cookie_name(APP_AUTHEN_SESSION_KEY.to_string())
         .session_lifecycle(
             PersistentSession::default().session_ttl(Duration::minutes(15 /*1 day*/)),
         )
@@ -105,12 +108,35 @@ async fn main() -> std::io::Result<()> {
                         r#"%a %t "%r" %s %b "%{Referer}i" "%{User-Agent}i" %T"#,
                     ))
                     .wrap_fn(|req, srv| {
+                        debug!("Path request : {}",req.path());
+                        if req.path().eq("/authentication"){
+
+                        }else{
+                            let cookie = req.cookie(APP_AUTHEN_SESSION_KEY);
+                            match cookie {
+                                None => {
+                                    debug!("Cookie not found");
+                                }
+                                Some(cookie) => {
+                                    let expire = cookie.expires();
+                                    match expire {
+                                        None => {
+                                            debug!("Expiration expired not found");
+                                        }
+                                        Some(expire) => {
+                                            debug!("Expiration expired {:?}", expire);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         srv.call(req).map(|res| {
                             debug!("Hi from response");
                             res
                         })
                         ////
                     })
+                    .route("/authentication",web::get().to(login))
                     .service(web::resource("/pagerouting")
                         .route(web::get().to(page_handler))
                         .route(web::post().to(page_handler)))

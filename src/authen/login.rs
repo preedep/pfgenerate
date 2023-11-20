@@ -10,7 +10,7 @@ use crate::results::result::{WebResponse, WebResult};
 ///
 //#[instrument]
 #[instrument(skip(_session))]
-async fn login(
+pub async fn login(
     _session: Session,
     _data: web::Data<Config>,
 ) -> WebResult<WebResponse> {
