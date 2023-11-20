@@ -35,29 +35,6 @@ pub async fn page_handler(req: HttpRequest) -> WebResult<WebResponse> {
             Ok(WebResponse {})
         }
     }
-    /*
-    return match req.method(){
-        None => {
-            Err(WebResponseError {})
-        }
-        Some(s) => {
-            match s {
-                "GET" => {
-                    debug!("Call GET page handler");
-                    do_get_page_handler(req.clone()).await
-                }
-                "POST" => {
-                    debug!("Call POST page handler");
-                    do_post_page_handler(req.clone()).await
-                }
-                _ => {
-                    Ok(WebResponse {})
-                }
-            }
-        }
-    };
-
-     */
 }
 
 async fn do_get_page_handler(req: HttpRequest) -> WebResult<WebResponse> {
