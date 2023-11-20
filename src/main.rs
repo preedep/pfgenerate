@@ -1,9 +1,11 @@
 mod authen;
 mod proxy;
+mod models;
+mod results;
 
 use actix_web::{App, HttpServer, web};
 use log::info;
-use crate::proxy::page_handler::page_handler;
+use crate::proxy::page_route_handler::page_handler;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()>{
