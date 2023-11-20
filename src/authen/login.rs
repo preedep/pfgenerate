@@ -1,6 +1,7 @@
 use actix_session::Session;
-use actix_web::{Responder, web};
+use actix_web::web;
 use tracing_attributes::instrument;
+
 use crate::models::configuration::Config;
 use crate::results::result::{WebResponse, WebResult};
 
@@ -13,7 +14,5 @@ async fn login(
     _session: Session,
     _data: web::Data<Config>,
 ) -> WebResult<WebResponse> {
-    Ok(WebResponse{
-
-    })
+    Ok(WebResponse {})
 }

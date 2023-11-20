@@ -1,25 +1,24 @@
+use actix_session::SessionMiddleware;
+use actix_session::config::PersistentSession;
+use actix_session::storage::RedisActorSessionStore;
+use actix_web::{App, cookie, HttpServer, middleware, web};
+use actix_web::dev::Service as _;
+use actix_web::cookie::SameSite;
+use actix_web::cookie::time::Duration;
+use actix_web::middleware::Logger;
+use actix_web::web::Data;
+use futures_util::future::FutureExt;
+use log::{debug, info};
+
+use crate::models::configuration::Config;
+use crate::models::entra_id::{JWKS, OpenIDConfigurationV2};
+use crate::router::page_route_handler::page_handler;
+
 mod authen;
 mod router;
 mod models;
 mod results;
 mod pages;
-
-use actix_web::{App, cookie, HttpServer, middleware, web};
-use actix_session::{SessionMiddleware};
-use actix_session::config::PersistentSession;
-use actix_session::storage::RedisActorSessionStore;
-use actix_web::cookie::SameSite;
-use actix_web::cookie::time::Duration;
-use actix_web::{dev::Service as _};
-use futures_util::future::FutureExt;
-
-use actix_web::middleware::Logger;
-use actix_web::web::Data;
-use log::{debug, info};
-use tracing::field::debug;
-use crate::models::configuration::Config;
-use crate::models::entra_id::{JWKS, OpenIDConfigurationV2};
-use crate::router::page_route_handler::page_handler;
 
 fn middle_ware_session(
     redis_connection: &str,
@@ -40,7 +39,7 @@ fn middle_ware_session(
 }
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()>{
+async fn main() -> std::io::Result<()> {
     pretty_env_logger::init();
 
     let redis_url = std::env::var("REDIS_URL").unwrap();
@@ -93,7 +92,7 @@ async fn main() -> std::io::Result<()>{
                     config.jwks = Some(jwks)
                 }
                 Err(er) => {
-                    panic!("{}",er)
+                    panic!("{}", er)
                 }
             }
 
@@ -115,14 +114,13 @@ async fn main() -> std::io::Result<()>{
                     .service(web::resource("/pagerouting")
                         .route(web::get().to(page_handler))
                         .route(web::post().to(page_handler)))
-
             }).workers(10)
                 .bind(("0.0.0.0", 8888))?
                 .run()
                 .await
         }
         Err(e) => {
-            panic!("{}",e);
+            panic!("{}", e);
         }
     }
 }

@@ -1,18 +1,17 @@
 use std::fmt::{Debug, Display, Formatter};
+
 use actix_web::{error, HttpRequest, HttpResponse, Responder};
 use actix_web::body::BoxBody;
 use actix_web::http::header::ContentType;
 use actix_web::http::StatusCode;
 use serde::Serialize;
 
-#[derive(Debug,Serialize)]
-pub struct WebResponse {
+#[derive(Debug, Serialize)]
+pub struct WebResponse {}
 
-}
-#[derive(Debug,Serialize)]
-pub struct WebResponseError {
+#[derive(Debug, Serialize)]
+pub struct WebResponseError {}
 
-}
 impl Responder for WebResponse {
     type Body = BoxBody;
 
@@ -45,4 +44,4 @@ impl error::ResponseError for WebResponseError {
     }
 }
 
-pub type WebResult<T> = Result<T,WebResponseError>;
+pub type WebResult<T> = Result<T, WebResponseError>;
