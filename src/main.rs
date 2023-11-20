@@ -18,7 +18,7 @@ use actix_web::web::Data;
 use log::{debug, info};
 use tracing::field::debug;
 use crate::models::configuration::Config;
-use crate::models::entra_id::OpenIDConfigurationV2;
+use crate::models::entra_id::{JWKS, OpenIDConfigurationV2};
 use crate::router::page_route_handler::page_handler;
 
 fn middle_ware_session(
@@ -52,7 +52,7 @@ async fn main() -> std::io::Result<()>{
     let client_secret = std::env::var("CLIENT_SECRET").unwrap();
     let cookie_ssl = std::env::var("COOKIE_SSL").unwrap_or("false".to_string());
 
-    let config = Config::new(
+    let mut config = Config::new(
         redirect_url.clone(),
         redis_auth_key.clone(),
         tenant_id.clone(),
@@ -81,7 +81,21 @@ async fn main() -> std::io::Result<()>{
 
     match res_meta_data_entra_id {
         Ok(entra_id_info) => {
-            debug!("Entra ID = {:#?}",entra_id_info);
+            config.open_id_config = Some(entra_id_info);
+            debug!("Entra ID = {:#?}",config.open_id_config);
+            debug!("Get JWKS configuration");
+            //get JWKS for verify jwt token
+            let jwks_uri = config.open_id_config.clone().unwrap().jwks_uri.unwrap();
+            let res_jwks_items = reqwest::get(jwks_uri).await.unwrap().json::<JWKS>().await;
+            match res_jwks_items {
+                Ok(jwks) => {
+                    debug!("Entra JWKS = {:#?}",jwks);
+                    config.jwks = Some(jwks)
+                }
+                Err(er) => {
+                    panic!("{}",er)
+                }
+            }
 
             HttpServer::new(move || {
                 App::new()
