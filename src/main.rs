@@ -9,6 +9,8 @@ use actix_session::config::PersistentSession;
 use actix_session::storage::RedisActorSessionStore;
 use actix_web::cookie::SameSite;
 use actix_web::cookie::time::Duration;
+use actix_web::{dev::Service as _};
+use futures_util::future::FutureExt;
 
 use actix_web::middleware::Logger;
 use actix_web::web::Data;
@@ -88,6 +90,13 @@ async fn main() -> std::io::Result<()>{
                     .wrap(Logger::new(
                         r#"%a %t "%r" %s %b "%{Referer}i" "%{User-Agent}i" %T"#,
                     ))
+                    .wrap_fn(|req, srv| {
+                        srv.call(req).map(|res| {
+                            debug!("Hi from response");
+                            res
+                        })
+                        ////
+                    })
                     .service(web::resource("/pagerouting")
                         .route(web::get().to(page_handler))
                         .route(web::post().to(page_handler)))
