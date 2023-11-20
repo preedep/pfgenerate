@@ -21,3 +21,4 @@ Cargo.lock
 /.idea/modules.xml
 /.idea/pfgenerate.iml
 /.idea/vcs.xml
+/migrations/.keep

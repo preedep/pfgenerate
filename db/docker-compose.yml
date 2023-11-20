@@ -12,7 +12,9 @@ services:
       MYSQL_DATABASE: 'pfgenerate_db'
       MYSQL_USER: 'user001'
       MYSQL_PASSWORD: 'password'
+      MYSQL_ROOT_HOST: "%"
       MYSQL_ROOT_PASSWORD: 'password'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
     expose:
       - "3306"
     ports:
