@@ -9,11 +9,13 @@ use actix_session::config::PersistentSession;
 use actix_session::storage::RedisActorSessionStore;
 use actix_web::cookie::SameSite;
 use actix_web::cookie::time::Duration;
-use actix_web::http::Method;
+
 use actix_web::middleware::Logger;
 use actix_web::web::Data;
-use log::debug;
+use log::{debug, info};
+use tracing::field::debug;
 use crate::models::configuration::Config;
+use crate::models::entra_id::OpenIDConfigurationV2;
 use crate::router::page_route_handler::page_handler;
 
 fn middle_ware_session(
@@ -57,21 +59,46 @@ async fn main() -> std::io::Result<()>{
         client_secret.clone(),
     );
 
-    HttpServer::new(move || {
-        App::new()
-            .app_data(Data::new(config.clone()))
-            .wrap(middleware::DefaultHeaders::new().add(("Dev-X-Version", "0.1")))
-            .wrap(Logger::default())
-            .wrap(Logger::new(
-                r#"%a %t "%r" %s %b "%{Referer}i" "%{User-Agent}i" %T"#,
-            ))
-            .service(web::resource("/pagerouting")
-                .route(web::get().to(page_handler))
-                .route(web::post().to(page_handler)))
+    //
+    // Get azure ad meta data
+    //
+    let url_openid_config = format!(
+        r#"https://login.microsoftonline.com/{:1}/v2.0/.well-known/openid-configuration?appid={:2}"#,
+        config.to_owned().tenant_id,
+        config.to_owned().client_id
+    );
 
-    })
-        .bind(("0.0.0.0", 8888))?
-        .run()
+    info!("url get azure ad configuration : {}", url_openid_config);
+
+    let res_meta_data_entra_id = reqwest::get(url_openid_config)
         .await
+        .unwrap()
+        .json::<OpenIDConfigurationV2>()
+        .await;
 
+    match res_meta_data_entra_id {
+        Ok(entra_id_info) => {
+            debug!("Entra ID = {:#?}",entra_id_info);
+
+            HttpServer::new(move || {
+                App::new()
+                    .app_data(Data::new(config.clone()))
+                    .wrap(middleware::DefaultHeaders::new().add(("Dev-X-Version", "0.1")))
+                    .wrap(Logger::default())
+                    .wrap(Logger::new(
+                        r#"%a %t "%r" %s %b "%{Referer}i" "%{User-Agent}i" %T"#,
+                    ))
+                    .service(web::resource("/pagerouting")
+                        .route(web::get().to(page_handler))
+                        .route(web::post().to(page_handler)))
+
+            }).workers(10)
+                .bind(("0.0.0.0", 8888))?
+                .run()
+                .await
+        }
+        Err(e) => {
+            panic!("{}",e);
+        }
+    }
 }
