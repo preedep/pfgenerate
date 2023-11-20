@@ -12,7 +12,7 @@ use log::{debug, info};
 
 use crate::models::configuration::Config;
 use crate::models::entra_id::{JWKS, OpenIDConfigurationV2};
-use crate::router::page_route_handler::page_handler;
+use crate::router::page_router::page_handler;
 
 mod authen;
 mod router;

@@ -22,7 +22,7 @@ impl Responder for WebResponse {
 
 impl Display for WebResponseError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        todo!()
+        write!(f, "{}", self.to_string())
     }
 }
 
