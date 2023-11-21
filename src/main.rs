@@ -1,18 +1,17 @@
-use actix_session::{SessionExt, SessionMiddleware, SessionStatus};
+use actix_session::{SessionExt, SessionMiddleware};
 use actix_session::config::PersistentSession;
 use actix_session::storage::RedisActorSessionStore;
-use actix_web::{App, cookie, HttpServer, middleware, web};
-use actix_web::dev::Service as _;
-use actix_web::cookie::{Cookie, Expiration, SameSite};
+use actix_web::{App, cookie, HttpResponse, HttpServer, middleware, web};
+use actix_web::cookie::SameSite;
 use actix_web::cookie::time::Duration;
+use actix_web::dev::Service as _;
 use actix_web::middleware::Logger;
 use actix_web::web::Data;
 use futures_util::future::FutureExt;
 use log::{debug, info};
-use tracing::field::debug;
+
 use crate::authen::callback::callback;
 use crate::authen::login::login;
-
 use crate::models::configuration::Config;
 use crate::models::entra_id::{JWKS, OpenIDConfigurationV2};
 use crate::router::page_router::page_handler;
@@ -22,6 +21,7 @@ mod router;
 mod models;
 mod results;
 mod pages;
+mod utils;
 
 const APP_AUTHEN_SESSION_KEY: &'static str = "APP_AUTHEN_SESSION_KEY";
 
@@ -125,7 +125,8 @@ async fn main() -> std::io::Result<()> {
                     ))
                     .wrap_fn(|req, srv| {
                         debug!("Path request : {}",req.path());
-                        if !req.path().eq("/authentication") && !req.path().eq("/callback"){
+                        let mut is_logon = false;
+                        if !req.path().eq("/authentication") && !req.path().eq("/callback") {
                             debug!("Is not /authentication and /callback");
                             let cookie = req.cookie(APP_AUTHEN_SESSION_KEY);
                             match cookie {
@@ -140,18 +141,23 @@ async fn main() -> std::io::Result<()> {
                                         }
                                         Some(expire) => {
                                             debug!("Expiration expired {:?}", expire);
+                                            is_logon = true;
                                         }
                                     }
                                 }
                             }
                         }
-                        srv.call(req).map(|res| {
-                            debug!("Hi from response");
-                            res
-                        })
+                        let fut = srv.call(req);
+                        async {
+                            let mut res = fut.await?;
+                            Ok(res.into_response(
+                                HttpResponse::Unauthorized()
+                                    .finish().map_into_boxed_body(),
+                            ))
+                        }
                         ////
                     })
-                    .route("/authentication",web::get().to(login))
+                    .route("/authentication", web::get().to(login))
                     .service(web::resource("/callback")
                         .route(web::get().to(callback))
                         .route(web::post().to(callback))

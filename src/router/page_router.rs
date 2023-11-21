@@ -1,10 +1,9 @@
 use actix_web::{HttpRequest, web};
 use actix_web::http::Method;
-use futures_util::future::err;
-use log::{debug, error};
+use log::debug;
 use serde::Deserialize;
 
-use crate::results::result::{WebResponse, WebResponseError, WebResult};
+use crate::results::result::{WebResponse, WebResult};
 
 #[derive(Debug, Deserialize)]
 pub enum PageType {
@@ -26,15 +25,15 @@ pub async fn page_handler(req: HttpRequest) -> WebResult<WebResponse> {
         &Method::GET => {
             debug!("Call GET page handler");
             do_get_page_handler(req.clone()).await
-        },
+        }
         &Method::POST => {
             debug!("Call POST page handler");
             do_post_page_handler(req.clone()).await
-        },
+        }
         _ => {
             Ok(WebResponse {})
         }
-    }
+    };
 }
 
 async fn do_get_page_handler(req: HttpRequest) -> WebResult<WebResponse> {

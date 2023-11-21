@@ -1,6 +1,8 @@
 use actix_session::Session;
 use actix_web::web;
+use log::debug;
 use tracing_attributes::instrument;
+
 use crate::models::configuration::Config;
 use crate::results::result::{WebResponse, WebResult};
 
@@ -13,5 +15,6 @@ pub async fn callback(
     _session: Session,
     _data: web::Data<Config>,
 ) -> WebResult<WebResponse> {
+    debug!("Callback called");
     Ok(WebResponse {})
 }
