@@ -9,6 +9,8 @@ use actix_web::middleware::Logger;
 use actix_web::web::Data;
 use futures_util::future::FutureExt;
 use log::{debug, info};
+use tracing::field::debug;
+use crate::authen::callback::callback;
 use crate::authen::login::login;
 
 use crate::models::configuration::Config;
@@ -28,6 +30,8 @@ fn middle_ware_session(
     private_key: cookie::Key,
     use_cookie_ssl: bool,
 ) -> SessionMiddleware<RedisActorSessionStore> {
+    debug!("Redis uri: {}", redis_connection);
+
     SessionMiddleware::builder(RedisActorSessionStore::new(
         redis_connection),
                                private_key)
@@ -53,9 +57,11 @@ async fn main() -> std::io::Result<()> {
     let client_id = std::env::var("CLIENT_ID").unwrap();
     let client_secret = std::env::var("CLIENT_SECRET").unwrap();
     let cookie_ssl = std::env::var("COOKIE_SSL").unwrap_or("false".to_string());
+    let use_cookie_ssl: bool = cookie_ssl.parse::<bool>().unwrap_or(false);
+
 
     let mut config = Config::new(
-        redirect_url.clone(),
+        redis_url.clone(),
         redis_auth_key.clone(),
         tenant_id.clone(),
         default_page.clone(),
@@ -63,6 +69,8 @@ async fn main() -> std::io::Result<()> {
         client_id.clone(),
         client_secret.clone(),
     );
+
+    debug!("Config loaded successfully = {:#?}", config);
 
     //
     // Get azure ad meta data
@@ -99,6 +107,8 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
+            // generate private key for session
+            let private_key = actix_web::cookie::Key::generate();
             HttpServer::new(move || {
                 App::new()
                     .app_data(Data::new(config.clone()))
@@ -107,11 +117,15 @@ async fn main() -> std::io::Result<()> {
                     .wrap(Logger::new(
                         r#"%a %t "%r" %s %b "%{Referer}i" "%{User-Agent}i" %T"#,
                     ))
+                    .wrap(middle_ware_session(
+                        config.clone().redis_url.as_str(),
+                        private_key.clone(),
+                        use_cookie_ssl,
+                    ))
                     .wrap_fn(|req, srv| {
                         debug!("Path request : {}",req.path());
-                        if req.path().eq("/authentication"){
-
-                        }else{
+                        if !req.path().eq("/authentication") && !req.path().eq("/callback"){
+                            debug!("Is not /authentication and /callback");
                             let cookie = req.cookie(APP_AUTHEN_SESSION_KEY);
                             match cookie {
                                 None => {
@@ -137,6 +151,10 @@ async fn main() -> std::io::Result<()> {
                         ////
                     })
                     .route("/authentication",web::get().to(login))
+                    .service(web::resource("/callback")
+                        .route(web::get().to(callback))
+                        .route(web::post().to(callback))
+                    )
                     .service(web::resource("/pagerouting")
                         .route(web::get().to(page_handler))
                         .route(web::post().to(page_handler)))
