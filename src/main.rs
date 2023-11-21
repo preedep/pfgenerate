@@ -160,7 +160,6 @@ async fn main() -> std::io::Result<()> {
                     })
                     .route("/authentication", web::get().to(login))
                     .service(web::resource("/callback")
-                        .route(web::get().to(callback))
                         .route(web::post().to(callback))
                     )
                     .service(web::resource("/pagerouting")

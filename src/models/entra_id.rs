@@ -127,3 +127,27 @@ pub struct IDToken {
     pub officelocation: Option<String>,
 }
 
+
+#[derive(Debug, Deserialize)]
+pub struct ResponseAuthorized {
+    #[serde(rename(deserialize = "code"))]
+    pub code: Option<String>,
+    #[serde(rename(deserialize = "session_state"))]
+    pub session_state: Option<String>,
+    #[serde(rename(deserialize = "state"))]
+    pub state: Option<String>,
+    #[serde(rename(deserialize = "id_token"))]
+    pub id_token: Option<String>,
+    #[serde(rename(deserialize = "error"))]
+    pub error: Option<String>,
+    #[serde(rename(deserialize = "error_description"))]
+    pub error_description: Option<String>,
+    #[serde(rename(deserialize = "access_token"))]
+    pub access_token: Option<String>,
+    #[serde(rename(deserialize = "token_type"))]
+    pub token_type: Option<String>,
+    #[serde(rename(deserialize = "scope"))]
+    pub scope: Option<String>,
+    #[serde(rename(deserialize = "expires_in"))]
+    pub expires_in: Option<i64>,
+}
