@@ -1,7 +1,7 @@
 use actix_session::{SessionExt, SessionMiddleware};
 use actix_session::config::PersistentSession;
 use actix_session::storage::RedisActorSessionStore;
-use actix_web::{App, cookie, HttpResponse, HttpServer, middleware, web};
+use actix_web::{App, cookie, HttpServer, middleware, web};
 use actix_web::cookie::SameSite;
 use actix_web::cookie::time::Duration;
 use actix_web::dev::Service as _;
@@ -150,10 +150,11 @@ async fn main() -> std::io::Result<()> {
                         let fut = srv.call(req);
                         async {
                             let mut res = fut.await?;
+                            /*
                             Ok(res.into_response(
-                                HttpResponse::Unauthorized()
-                                    .finish().map_into_boxed_body(),
-                            ))
+                                redirect_to_page("/authentication").map_into_boxed_body(),
+                            ))*/
+                            Ok(res)
                         }
                         ////
                     })

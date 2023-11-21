@@ -72,3 +72,58 @@ pub struct JWKSKeyItem {
     pub x5c: Option<Vec<String>>,
     pub issuer: Option<String>,
 }
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct IDToken {
+    pub aud: Option<String>,
+    pub iss: Option<String>,
+    pub iat: Option<i64>,
+    pub nbf: Option<i64>,
+    pub exp: Option<i64>,
+    pub acct: Option<i64>,
+    pub acrs: Option<Vec<String>>,
+    pub aio: Option<String>,
+    #[serde(rename = "auth_time")]
+    pub auth_time: Option<i64>,
+    pub ctry: Option<String>,
+    pub email: Option<String>,
+    #[serde(rename = "family_name")]
+    pub family_name: Option<String>,
+    #[serde(rename = "given_name")]
+    pub given_name: Option<String>,
+    pub groups: Option<Vec<String>>,
+    pub idp: Option<String>,
+    pub ipaddr: Option<String>,
+    #[serde(rename = "login_hint")]
+    pub login_hint: Option<String>,
+    pub name: Option<String>,
+    pub nonce: Option<String>,
+    pub oid: Option<String>,
+    #[serde(rename = "preferred_username")]
+    pub preferred_username: Option<String>,
+    pub rh: Option<String>,
+    pub sid: Option<String>,
+    pub sub: Option<String>,
+    #[serde(rename = "tenant_ctry")]
+    pub tenant_ctry: Option<String>,
+    #[serde(rename = "tenant_region_scope")]
+    pub tenant_region_scope: Option<String>,
+    pub tid: Option<String>,
+    pub uti: Option<String>,
+    pub ver: Option<String>,
+    pub wids: Option<Vec<String>>,
+    #[serde(rename = "xms_pl")]
+    pub xms_pl: Option<String>,
+    #[serde(rename = "xms_tpl")]
+    pub xms_tpl: Option<String>,
+    #[serde(rename = "employee_id")]
+    pub employee_id: Option<String>,
+    #[serde(rename = "department")]
+    pub department: Option<String>,
+    #[serde(rename = "companyname")]
+    pub companyname: Option<String>,
+    #[serde(rename = "officelocation")]
+    pub officelocation: Option<String>,
+}
+

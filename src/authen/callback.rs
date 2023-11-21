@@ -1,20 +1,20 @@
 use actix_session::Session;
-use actix_web::web;
+use actix_web::{Responder, web};
 use log::debug;
 use tracing_attributes::instrument;
 
 use crate::models::configuration::Config;
-use crate::results::result::{WebResponse, WebResult};
+use crate::utils::utils::redirect_to_page;
 
 ///
 ///  main page
 ///
 //#[instrument]
-#[instrument(skip(_session))]
+#[instrument(skip(session))]
 pub async fn callback(
-    _session: Session,
-    _data: web::Data<Config>,
-) -> WebResult<WebResponse> {
+    session: Session,
+    data: web::Data<Config>,
+) -> impl Responder {
     debug!("Callback called");
-    Ok(WebResponse {})
+    redirect_to_page("")
 }
