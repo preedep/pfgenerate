@@ -30,6 +30,7 @@ fn middle_ware_session(
     private_key: cookie::Key,
     use_cookie_ssl: bool,
 ) -> SessionMiddleware<RedisActorSessionStore> {
+    let redis_connection = redis_connection.replace("redis://", "");
     debug!("Redis uri: {}", redis_connection);
 
     SessionMiddleware::builder(RedisActorSessionStore::new(
