@@ -1,7 +1,5 @@
-use actix_session::{Session, SessionGetError};
+use actix_session::Session;
 use actix_web::{Responder, web};
-use jsonwebtoken::errors::Error;
-use jsonwebtoken::TokenData;
 use log::{debug, error};
 use oauth2::PkceCodeVerifier;
 use tracing_attributes::instrument;
@@ -28,9 +26,9 @@ pub async fn callback(
             let value = session.get::<PkceCodeVerifier>(state.as_str());
             match value {
                 Ok(key) => {
-                    if !(key.map_or(String::new(),|pkce|{
+                    if !(key.map_or(String::new(), |pkce| {
                         pkce.secret().to_string()
-                    }).is_empty()){
+                    }).is_empty()) {
                         // Verify token with JWKS
                         let result = jwt_token_validation::<IDToken>(
                             &params.0.id_token.clone().unwrap(),

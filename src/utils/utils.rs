@@ -1,10 +1,11 @@
 use actix_web::http::header::LOCATION;
 use actix_web::HttpResponse;
-use jsonwebtoken::errors::{Error, ErrorKind};
 use jsonwebtoken::{Algorithm, decode, decode_header, DecodingKey, TokenData, Validation};
+use jsonwebtoken::errors::{Error, ErrorKind};
 use log::debug;
 use serde::de::DeserializeOwned;
 use tracing_attributes::instrument;
+
 use crate::models::entra_id::{JWKS, JWKSKeyItem};
 
 ///
@@ -15,6 +16,7 @@ pub fn redirect_to_page(page: &str) -> HttpResponse {
         .insert_header((LOCATION, page))
         .finish()
 }
+
 ///
 /// Get JWKS Item by kid
 ///
@@ -30,6 +32,7 @@ fn get_jwks_item(jwks: &JWKS, kid: &str) -> Option<JWKSKeyItem> {
     }
     None
 }
+
 ///
 /// Validate JWT Token
 ///
