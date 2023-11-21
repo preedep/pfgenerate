@@ -43,6 +43,8 @@ pub fn jwt_token_validation<T>(jwt_token: &str, jwks: &JWKS) -> Result<TokenData
         T: DeserializeOwned,
 {
     let header = decode_header(jwt_token);
+    let mut validation = Validation::new(Algorithm::RS256);
+
     match header {
         Ok(h) => match get_jwks_item(jwks, h.kid.unwrap().as_str()) {
             Some(item) => {
@@ -54,8 +56,9 @@ pub fn jwt_token_validation<T>(jwt_token: &str, jwks: &JWKS) -> Result<TokenData
                         item.e.clone().unwrap().as_str(),
                     )
                         .unwrap(),
-                    &Validation::new(Algorithm::RS256),
+                    &validation
                 );
+                debug!("Return token");
                 token
             }
             None => Err(jsonwebtoken::errors::Error::from(
