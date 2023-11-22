@@ -6,7 +6,7 @@ use log::debug;
 use serde::de::DeserializeOwned;
 use tracing_attributes::instrument;
 
-use crate::models::entra_id::{JWKS, JWKSKeyItem, OpenIDConfigurationV2};
+use crate::models::entra_id::{JWKS, JWKSKeyItem};
 
 ///
 /// redirect to page

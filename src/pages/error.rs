@@ -5,7 +5,6 @@ use tracing_attributes::instrument;
 use crate::models::configuration::Config;
 use crate::models::web_params::ErrorParameter;
 
-
 #[instrument(skip(session))]
 pub async fn page_error(
     session: Session,
