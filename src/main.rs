@@ -9,6 +9,7 @@ use actix_web::dev::Service as _;
 use actix_web::middleware::Logger;
 use actix_web::web::Data;
 use futures_util::future::FutureExt;
+use handlebars::Handlebars;
 use log::{debug, info};
 
 use crate::authen::callback::callback;
@@ -112,11 +113,17 @@ async fn main() -> std::io::Result<()> {
                 }
             }
 
+            let mut hbars = Handlebars::new();
+            hbars
+                .register_templates_directory(".html", "./static/")
+                .unwrap();
+
             // generate private key for session
             let private_key = actix_web::cookie::Key::generate();
             HttpServer::new(move || {
                 App::new()
                     .app_data(Data::new(config.clone()))
+                    .app_data(Data::new(hbars.clone()))
                     .wrap(middleware::DefaultHeaders::new().add(("Dev-X-Version", "0.1")))
                     .wrap(Logger::default())
                     .wrap(Logger::new(
