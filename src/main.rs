@@ -12,16 +12,17 @@ use futures_util::future::FutureExt;
 use handlebars::Handlebars;
 use log::{debug, info};
 
-use crate::authen::callback::callback;
-use crate::authen::login::login;
-use crate::authen::logout::logout;
+
 use crate::models::configuration::Config;
 use crate::models::entra_id::{JWKS, OpenIDConfigurationV2};
+use crate::pages::callback::callback;
 use crate::pages::error::page_error;
 use crate::pages::index::page_index;
+use crate::pages::login::login;
+use crate::pages::logout::logout;
 use crate::router::page_router::page_handler;
 
-mod authen;
+
 mod router;
 mod models;
 mod results;
