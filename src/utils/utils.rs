@@ -6,7 +6,7 @@ use log::debug;
 use serde::de::DeserializeOwned;
 use tracing_attributes::instrument;
 
-use crate::models::entra_id::{JWKS, JWKSKeyItem};
+use crate::models::entra_id::{JWKS, JWKSKeyItem, OpenIDConfigurationV2};
 
 ///
 /// redirect to page
@@ -38,13 +38,24 @@ fn get_jwks_item(jwks: &JWKS, kid: &str) -> Option<JWKSKeyItem> {
 ///
 //#[instrument]
 #[instrument(level = "debug")]
-pub fn jwt_token_validation<T>(jwt_token: &str, jwks: &JWKS) -> Result<TokenData<T>, Error>
+pub fn jwt_token_validation<T>(jwt_token: &str,
+                               jwks: &JWKS,
+                               aud: Option<String>) -> Result<TokenData<T>, Error>
     where
         T: DeserializeOwned,
 {
+    debug!("JWT Token Validation");
     let header = decode_header(jwt_token);
     let mut validation = Validation::new(Algorithm::RS256);
-
+    /*
+    if entra_info.clone().issuer.is_some() {
+        let issuer = entra_info.clone().issuer.unwrap();
+        debug!("Issuer for validate : {}", issuer);
+        validation.set_issuer(&[issuer.as_str()])
+    }*/
+    if aud.clone().is_some() {
+        validation.set_audience(&[aud.clone().unwrap().as_str()]);
+    }
     match header {
         Ok(h) => match get_jwks_item(jwks, h.kid.unwrap().as_str()) {
             Some(item) => {

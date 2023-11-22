@@ -30,9 +30,11 @@ pub async fn callback(
                         pkce.secret().to_string()
                     }).is_empty()) {
                         // Verify token with JWKS
+                        //let entra_id_info = data.clone().open_id_config.unwrap();
                         let result = jwt_token_validation::<IDToken>(
                             &params.0.id_token.clone().unwrap(),
-                            &data.jwks.clone().unwrap(),
+                            data.jwks.as_ref().unwrap(),
+                            Some(data.as_ref().client_id.clone())
                         );
                         match result {
                             Ok(result) => {
