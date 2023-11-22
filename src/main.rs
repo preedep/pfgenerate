@@ -1,3 +1,4 @@
+use actix_files::Files;
 use actix_session::{SessionExt, SessionMiddleware};
 use actix_session::config::PersistentSession;
 use actix_session::storage::RedisActorSessionStore;
@@ -12,6 +13,7 @@ use log::{debug, info};
 
 use crate::authen::callback::callback;
 use crate::authen::login::login;
+use crate::authen::logout::logout;
 use crate::models::configuration::Config;
 use crate::models::entra_id::{JWKS, OpenIDConfigurationV2};
 use crate::pages::error::page_error;
@@ -160,13 +162,15 @@ async fn main() -> std::io::Result<()> {
                         }
                         ////
                     })
-                    .route("/",web::get().to(page_index))
+                    .route("/", web::get().to(page_index))
                     .route("/authentication", web::get().to(login))
-                    .route("/error",web::get().to(page_error))
-                    .route("/callback",web::post().to(callback))
+                    .route("/error", web::get().to(page_error))
+                    .route("/callback", web::post().to(callback))
                     .service(web::resource("/pagerouting")
                         .route(web::get().to(page_handler))
                         .route(web::post().to(page_handler)))
+                    .route("/logout", web::get().to(logout))
+                    .service(Files::new("static", "./static").prefer_utf8(true))
             }).workers(10)
                 .bind(("0.0.0.0", 8888))?
                 .run()

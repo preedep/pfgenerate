@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug,Serialize,Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ErrorParameter {
     #[serde(rename(deserialize = "error"))]
     pub error: Option<String>,

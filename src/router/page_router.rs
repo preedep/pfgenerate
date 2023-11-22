@@ -1,9 +1,9 @@
-use actix_web::{HttpRequest, web};
+use actix_web::{FromRequest, HttpRequest, Responder, web};
 use actix_web::http::Method;
 use log::debug;
 use serde::Deserialize;
 
-use crate::results::result::{WebResponse, WebResult};
+use crate::utils::utils::redirect_to_page;
 
 #[derive(Debug, Deserialize)]
 pub enum PageType {
@@ -19,47 +19,26 @@ pub struct PageHandlerParams {
     page_to: Option<PageType>,
 }
 
-pub async fn page_handler(req: HttpRequest) -> WebResult<WebResponse> {
+pub async fn page_handler(req: HttpRequest) -> impl Responder {
     debug!("Calling page handler");
-    return match req.method() {
+    let params = match req.method() {
         &Method::GET => {
             debug!("Call GET page handler");
-            do_get_page_handler(req.clone()).await
+            web::Query::<PageHandlerParams>::from_query(
+                req.query_string()
+            ).unwrap().0
         }
         &Method::POST => {
             debug!("Call POST page handler");
-            do_post_page_handler(req.clone()).await
+            web::Form::<PageHandlerParams>::extract(&req).await.unwrap().0
         }
         _ => {
-            Ok(WebResponse {})
+            debug!("Call GET page handler");
+            PageHandlerParams {
+                page_from: None,
+                page_to: None,
+            }
         }
     };
-}
-
-async fn do_get_page_handler(req: HttpRequest) -> WebResult<WebResponse> {
-    let params = web::Query::<PageHandlerParams>::from_query(
-        req.query_string()
-    )
-        .unwrap_or(web::Query(PageHandlerParams {
-            page_from: None,
-            page_to: None,
-        }));
-
-    do_internal_page_handler(params.0).await
-}
-
-async fn do_post_page_handler(req: HttpRequest) -> WebResult<WebResponse> {
-    let params = web::Query::<PageHandlerParams>::from_query(
-        req.query_string()
-    )
-        .unwrap_or(web::Query(PageHandlerParams {
-            page_from: None,
-            page_to: None,
-        }));
-
-    do_internal_page_handler(params.0).await
-}
-
-async fn do_internal_page_handler(page_params: PageHandlerParams) -> WebResult<WebResponse> {
-    Ok(WebResponse {})
+    redirect_to_page("/")
 }

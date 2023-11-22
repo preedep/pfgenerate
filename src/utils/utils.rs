@@ -8,6 +8,8 @@ use tracing_attributes::instrument;
 
 use crate::models::entra_id::{JWKS, JWKSKeyItem};
 
+pub const KEY_ID_TOKEN: &'static str = "KEY_ID_TOKEN";
+
 ///
 /// redirect to page
 ///
@@ -67,7 +69,7 @@ pub fn jwt_token_validation<T>(jwt_token: &str,
                         item.e.clone().unwrap().as_str(),
                     )
                         .unwrap(),
-                    &validation
+                    &validation,
                 );
                 debug!("Return token");
                 token

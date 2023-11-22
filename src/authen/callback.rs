@@ -6,7 +6,7 @@ use tracing_attributes::instrument;
 
 use crate::models::configuration::Config;
 use crate::models::entra_id::{IDToken, ResponseAuthorized};
-use crate::utils::utils::{jwt_token_validation, redirect_to_page};
+use crate::utils::utils::{jwt_token_validation, KEY_ID_TOKEN, redirect_to_page};
 
 ///
 ///  main page
@@ -34,11 +34,12 @@ pub async fn callback(
                         let result = jwt_token_validation::<IDToken>(
                             &params.0.id_token.clone().unwrap(),
                             data.jwks.as_ref().unwrap(),
-                            Some(data.as_ref().client_id.clone())
+                            Some(data.as_ref().client_id.clone()),
                         );
                         match result {
                             Ok(result) => {
                                 debug!("IDToken validation succeeded {:#?}", result);
+                                session.insert(KEY_ID_TOKEN, result.claims).unwrap();
                             }
                             Err(err) => {
                                 error!("JWT Token Validate {}", err);
