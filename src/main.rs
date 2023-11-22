@@ -14,6 +14,8 @@ use crate::authen::callback::callback;
 use crate::authen::login::login;
 use crate::models::configuration::Config;
 use crate::models::entra_id::{JWKS, OpenIDConfigurationV2};
+use crate::pages::error::page_error;
+use crate::pages::index::page_index;
 use crate::router::page_router::page_handler;
 
 mod authen;
@@ -158,10 +160,10 @@ async fn main() -> std::io::Result<()> {
                         }
                         ////
                     })
+                    .route("/",web::get().to(page_index))
                     .route("/authentication", web::get().to(login))
-                    .service(web::resource("/callback")
-                        .route(web::post().to(callback))
-                    )
+                    .route("/error",web::get().to(page_error))
+                    .route("/callback",web::post().to(callback))
                     .service(web::resource("/pagerouting")
                         .route(web::get().to(page_handler))
                         .route(web::post().to(page_handler)))
