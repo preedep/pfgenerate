@@ -8,7 +8,7 @@ use tracing_attributes::instrument;
 
 use crate::models::entra_id::{JWKS, JWKSKeyItem};
 
-pub const KEY_ID_TOKEN: &'static str = "KEY_ID_TOKEN";
+pub const SESSION_KEY_ID_TOKEN: &'static str = "SESSION_KEY_ID_TOKEN";
 
 ///
 /// redirect to page

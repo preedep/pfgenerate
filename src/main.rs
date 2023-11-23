@@ -12,7 +12,6 @@ use futures_util::future::FutureExt;
 use handlebars::Handlebars;
 use log::{debug, info};
 
-
 use crate::models::configuration::Config;
 use crate::models::entra_id::{JWKS, OpenIDConfigurationV2};
 use crate::pages::callback::callback;
@@ -21,7 +20,6 @@ use crate::pages::index::page_index;
 use crate::pages::login::login;
 use crate::pages::logout::logout;
 use crate::router::page_router::page_handler;
-
 
 mod router;
 mod models;
@@ -136,39 +134,18 @@ async fn main() -> std::io::Result<()> {
                         use_cookie_ssl,
                     ))
                     .wrap_fn(|req, srv| {
-                        debug!("Path request : {}",req.path());
-                        let mut is_logon = false;
-                        if !req.path().eq("/authentication") && !req.path().eq("/callback") {
-                            debug!("Is not /authentication and /callback");
-                            let cookie = req.cookie(APP_AUTHEN_SESSION_KEY);
-                            match cookie {
-                                None => {
-                                    debug!("Cookie not found");
-                                }
-                                Some(cookie) => {
-                                    let expire = cookie.expires();
-                                    match expire {
-                                        None => {
-                                            debug!("Expiration expired not found");
-                                        }
-                                        Some(expire) => {
-                                            debug!("Expiration expired {:?}", expire);
-                                            is_logon = true;
-                                        }
-                                    }
-                                }
+                        debug!("Headers = {:#?}", req.headers());
+                        match req.cookie(APP_AUTHEN_SESSION_KEY) {
+                            None => {
+                                debug!("No cookie");
+                            }
+                            Some(cookie) => {
+                                debug!("Cookie = {:#?}", cookie);
                             }
                         }
-                        let fut = srv.call(req);
-                        async {
-                            let mut res = fut.await?;
-                            /*
-                            Ok(res.into_response(
-                                redirect_to_page("/authentication").map_into_boxed_body(),
-                            ))*/
-                            Ok(res)
-                        }
-                        ////
+                        srv.call(req).map(|res| {
+                            res
+                        })
                     })
                     .route("/", web::get().to(page_index))
                     .route("/authentication", web::get().to(login))

@@ -6,7 +6,7 @@ use tracing_attributes::instrument;
 
 use crate::models::configuration::Config;
 use crate::models::entra_id::IDToken;
-use crate::utils::utils::KEY_ID_TOKEN;
+use crate::utils::utils::SESSION_KEY_ID_TOKEN;
 
 #[instrument(skip(session))]
 pub async fn page_index(
@@ -14,13 +14,13 @@ pub async fn page_index(
     data: web::Data<Config>,
     hb: web::Data<Handlebars<'_>>,
 ) -> impl Responder {
-    match session.get::<IDToken>(KEY_ID_TOKEN).unwrap() {
+    match session.get::<IDToken>(SESSION_KEY_ID_TOKEN).unwrap() {
         None => {}
         Some(id_token) => {
             debug!("Page Index with ID token {:#?}", id_token);
         }
     }
-    let x = IDToken{
+    let x = IDToken {
         aud: None,
         iss: None,
         iat: None,
